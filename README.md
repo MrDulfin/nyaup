@@ -1,18 +1,11 @@
-# Serde URL Params
+# Yaup - Yet Another URL Params crate
 
-[![crates-badge]][crates-url]
-[![docs-badge]][docs-url]
-[![license-badge]][license]
-[![ci-badge]][ci-url]
+This is a fork of [`serde_url_params`](https://github.com/boxdot/serde-url-params-rs).
+The only difference with `serde_url_params` is when it comes to array.
 
-[crates-badge]: https://img.shields.io/crates/v/serde-url-params.svg
-[crates-url]: https://crates.io/crates/serde-url-params
-[docs-badge]: https://docs.rs/serde_url_params/badge.svg
-[docs-url]: https://docs.rs/serde_url_params
-[license-badge]: https://img.shields.io/crates/l/serde-url-params.svg
-[license]: #license
-[ci-badge]: https://github.com/boxdot/serde-url-params-rs/workflows/rust/badge.svg
-[ci-url]: https://github.com/boxdot/serde-url-params-rs/actions
+Serializing `{ "food": ["baguette", "with", "cheese"] }`
+- With `serde_url_params` returns `food=baguette&food=with&food=cheese`.
+- With `yaup` it returns `food=baguette,with,cheese`.
 
 Serialization of URL parameters from Rust structs.
 
@@ -33,12 +26,12 @@ struct Params {
 let params = Params {
     cursor: Some(42),
     per_page: None,
-    username: String::from("boxdot"),
+    username: String::from("tamo"),
     filter: vec![Filter::New, Filter::Blocked],
 };
 assert_eq!(
     serde_url_params::to_string(&params).unwrap(),
-    "cursor=42&username=boxdot&filter=New&filter=Blocked"
+    "cursor=42&username=boxdot&filter=New,Blocked"
 );
 ```
 
