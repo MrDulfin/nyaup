@@ -29,7 +29,7 @@ let params = Params {
     filter: vec![Filter::New, Filter::Blocked],
 };
 assert_eq!(
-    serde_url_params::to_string(&params).unwrap(),
+    yaup::to_string(&params).unwrap(),
     "cursor=42&username=boxdot&filter=New,Blocked"
 );
 ```

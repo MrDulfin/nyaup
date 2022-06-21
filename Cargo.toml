@@ -12,8 +12,8 @@ include = ["Cargo.toml", "src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-
 edition = "2021"
 
 [dependencies]
-serde = "1.0.104"
-url = "2.1.1"
+serde = "1"
+url = "2"
 
 [dev-dependencies]
-serde = { version = "1.0.104", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }

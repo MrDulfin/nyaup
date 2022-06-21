@@ -36,7 +36,7 @@
 //!     options: Options,
 //! }
 //!
-//! fn main() -> Result<(), serde_url_params::Error> {
+//! fn main() -> Result<(), yaup::Error> {
 //!     // Some data structure.
 //!     let request = SearchRequest {
 //!         film: String::from("Fight Club"),
@@ -50,7 +50,7 @@
 //!     };
 //!
 //!     // Serialize it to a URL parameters string.
-//!     let p = serde_url_params::to_string(&request).unwrap();
+//!     let p = yaup::to_string(&request).unwrap();
 //!     assert_eq!(
 //!         p,
 //!         "film=Fight+Club&per_page=20&filter=Thriller,Drama&year=1999&actors=Edward+Norton"
