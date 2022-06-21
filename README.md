@@ -1,13 +1,12 @@
 # Yaup - Yet Another URL Params crate
 
 This is a fork of [`serde_url_params`](https://github.com/boxdot/serde-url-params-rs).
-The only difference with `serde_url_params` is when it comes to array.
-
+I updated the way of serializing arrays:
 Serializing `{ "food": ["baguette", "with", "cheese"] }`
 - With `serde_url_params` returns `food=baguette&food=with&food=cheese`.
 - With `yaup` it returns `food=baguette,with,cheese`.
 
-Serialization of URL parameters from Rust structs.
+And I got rids of the serialization of embedded structures.
 
 ## Example
 

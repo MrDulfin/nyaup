@@ -53,7 +53,7 @@
 //!     let p = serde_url_params::to_string(&request).unwrap();
 //!     assert_eq!(
 //!         p,
-//!         "film=Fight+Club&per_page=20&filter=Thriller&filter=Drama&year=1999&actors=Edward+Norton"
+//!         "film=Fight+Club&per_page=20&filter=Thriller,Drama&year=1999&actors=Edward+Norton"
 //!     );
 //!     Ok(())
 //! }
@@ -128,7 +128,7 @@ mod tests {
         assert!(get_params.is_ok());
         assert_eq!(
             get_params.unwrap(),
-            "id=some_id&filter=filter1&filter=filter2&optional_filter=filter3&select=A&select2=A&select2=B&num=42&results=pass&results=fail"
+            "id=some_id&filter=filter1,filter2&optional_filter=filter3&select=A&select2=A,B&num=42&results=pass,fail"
         );
     }
 
@@ -157,7 +157,7 @@ mod tests {
         };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=42&field=hello&field=3.14");
+        assert_eq!(url_params.unwrap(), "field=42,hello,3.14");
     }
 
     #[test]
@@ -172,8 +172,7 @@ mod tests {
             field: TupleStruct(42, "hello", 3.14),
         };
         let url_params = to_string(&params);
-        assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=42&field=hello&field=3.14");
+        assert!(url_params.is_err());
     }
 
     #[test]
@@ -308,9 +307,6 @@ mod tests {
             ],
         };
         let url_params = to_string(&params);
-        assert_eq!(
-            url_params.expect("failed serialization"),
-            "real=0&imag=1&real=1&imag=0"
-        );
+        assert!(url_params.is_err());
     }
 }

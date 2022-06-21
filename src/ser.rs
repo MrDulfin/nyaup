@@ -8,6 +8,8 @@ use std::io;
 pub struct Serializer<W> {
     writer: W,
     current_key: Option<String>,
+    in_array: Option<usize>,
+    first_iteration_of_array: bool,
     first_param: bool,
 }
 
@@ -19,6 +21,8 @@ where
         Serializer {
             writer,
             current_key: None,
+            in_array: None,
+            first_iteration_of_array: false,
             first_param: true,
         }
     }
@@ -29,15 +33,28 @@ where
         T: fmt::Display,
     {
         use serde::ser::Error;
+
         match self.current_key.as_ref() {
             Some(key) => {
-                write!(
-                    self.writer,
-                    "{}{}={}",
-                    if self.first_param { "" } else { "&" },
-                    key,
-                    value
-                )?;
+                if !self.first_param && (self.in_array.is_none() || self.first_iteration_of_array) {
+                    write!(self.writer, "&")?
+                }
+                if let Some(ref mut remaining) = self.in_array {
+                    *remaining -= 1;
+                    if *remaining == 0 {
+                        self.in_array = None;
+                    }
+                    if self.first_iteration_of_array {
+                        self.first_iteration_of_array = false;
+                        write!(self.writer, "{key}=")?
+                    } else {
+                        write!(self.writer, ",")?
+                    }
+                } else {
+                    write!(self.writer, "{}=", key)?;
+                }
+                write!(self.writer, "{}", value)?;
+
                 self.first_param = false;
                 Ok(())
             }
@@ -195,7 +212,9 @@ where
     }
 
     #[inline]
-    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
+    fn serialize_seq(mut self, len: Option<usize>) -> Result<Self::SerializeSeq> {
+        self.in_array = len;
+        self.first_iteration_of_array = true;
         Ok(self)
     }
 
@@ -210,7 +229,11 @@ where
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Ok(self)
+        if self.current_key.is_some() || self.in_array.is_some() {
+            Err(Self::Error::unsupported("nexted struct variant"))
+        } else {
+            Ok(self)
+        }
     }
 
     #[inline]
@@ -221,17 +244,25 @@ where
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        Ok(self)
+        if self.current_key.is_some() || self.in_array.is_some() {
+            Err(Self::Error::unsupported("nexted struct variant"))
+        } else {
+            Ok(self)
+        }
     }
 
     #[inline]
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
-        Ok(self)
+        if self.current_key.is_some() || self.in_array.is_some() {
+            Err(Self::Error::unsupported("nexted struct variant"))
+        } else {
+            Ok(self)
+        }
     }
 
     #[inline]
     fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
-        if self.current_key.is_some() {
+        if self.current_key.is_some() || self.in_array.is_some() {
             Err(Self::Error::unsupported("nested struct"))
         } else {
             Ok(self)
@@ -246,7 +277,7 @@ where
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        if self.current_key.is_some() {
+        if self.current_key.is_some() || self.in_array.is_some() {
             Err(Self::Error::unsupported("nexted struct variant"))
         } else {
             Ok(self)
