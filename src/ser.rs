@@ -140,7 +140,6 @@ where
 
     #[inline]
     fn serialize_str(self, value: &str) -> Result<()> {
-        use std::iter::FromIterator;
         let encoded = String::from_iter(url::form_urlencoded::byte_serialize(value.as_bytes()));
         self.write_key_value(&encoded)
     }
