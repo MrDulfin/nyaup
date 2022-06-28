@@ -1,6 +1,8 @@
 //! Serialize a Rust data structure into URL parameters string.
 
-use crate::error::{Error, Result};
+use serde::ser::Error;
+
+use crate::error::Result;
 use std::fmt;
 use std::io;
 
@@ -9,7 +11,6 @@ pub struct Serializer<W> {
     writer: W,
     current_key: Option<String>,
     in_array: Option<usize>,
-    first_iteration_of_array: bool,
     first_param: bool,
 }
 
@@ -22,7 +23,6 @@ where
             writer,
             current_key: None,
             in_array: None,
-            first_iteration_of_array: false,
             first_param: true,
         }
     }
@@ -32,28 +32,27 @@ where
     where
         T: fmt::Display,
     {
-        use serde::ser::Error;
-
         match self.current_key.as_ref() {
             Some(key) => {
-                if !self.first_param && (self.in_array.is_none() || self.first_iteration_of_array) {
+                if !self.first_param && (self.in_array.is_none()) {
                     write!(self.writer, "&")?
                 }
+
                 if let Some(ref mut remaining) = self.in_array {
                     *remaining -= 1;
                     if *remaining == 0 {
                         self.in_array = None;
                     }
-                    if self.first_iteration_of_array {
-                        self.first_iteration_of_array = false;
-                        write!(self.writer, "{key}=")?
-                    } else {
-                        write!(self.writer, ",")?
-                    }
                 } else {
+                    // if I’m not in an array
                     write!(self.writer, "{}=", key)?;
                 }
+
                 write!(self.writer, "{}", value)?;
+
+                if self.in_array.is_some() {
+                    write!(self.writer, ",")?;
+                }
 
                 self.first_param = false;
                 Ok(())
@@ -68,7 +67,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     type SerializeSeq = Self;
     type SerializeTuple = Self;
@@ -169,12 +168,12 @@ where
 
     #[inline]
     fn serialize_unit(self) -> Result<()> {
-        Ok(())
+        self.serialize_seq(Some(0)).map(|_| ())
     }
 
     #[inline]
     fn serialize_unit_struct(self, _name: &'static str) -> Result<()> {
-        Ok(())
+        self.serialize_seq(Some(0)).map(|_| ())
     }
 
     #[inline]
@@ -212,8 +211,15 @@ where
 
     #[inline]
     fn serialize_seq(mut self, len: Option<usize>) -> Result<Self::SerializeSeq> {
+        if !self.first_param {
+            write!(self.writer, "&")?;
+            self.first_param = false;
+        }
+        match self.current_key.as_ref() {
+            Some(key) => write!(self.writer, "{key}=")?,
+            None => return Err(Error::custom("cannot serialize top level value")),
+        }
         self.in_array = len;
-        self.first_iteration_of_array = true;
         Ok(self)
     }
 
@@ -289,7 +295,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<()>
     where
@@ -308,7 +314,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<()>
     where
@@ -327,7 +333,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<()>
     where
@@ -346,7 +352,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<()>
     where
@@ -365,7 +371,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_key<T>(&mut self, key: &T) -> Result<()>
     where
@@ -396,7 +402,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<()>
     where
@@ -417,7 +423,7 @@ where
     W: io::Write,
 {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<()>
     where
@@ -448,7 +454,7 @@ impl Into<String> for StringOnlySerializer {
 
 impl<'a> ::serde::ser::Serializer for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     type SerializeSeq = Self;
     type SerializeTuple = Self;
@@ -639,7 +645,7 @@ impl<'a> ::serde::ser::Serializer for &'a mut StringOnlySerializer {
 
 impl<'a> ::serde::ser::SerializeSeq for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_element<T>(&mut self, _value: &T) -> Result<()>
     where
@@ -655,7 +661,7 @@ impl<'a> ::serde::ser::SerializeSeq for &'a mut StringOnlySerializer {
 
 impl<'a> ::serde::ser::SerializeTuple for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_element<T>(&mut self, _value: &T) -> Result<()>
     where
@@ -671,7 +677,7 @@ impl<'a> ::serde::ser::SerializeTuple for &'a mut StringOnlySerializer {
 
 impl<'a> ::serde::ser::SerializeTupleStruct for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, _value: &T) -> Result<()>
     where
@@ -687,7 +693,7 @@ impl<'a> ::serde::ser::SerializeTupleStruct for &'a mut StringOnlySerializer {
 
 impl<'a> ::serde::ser::SerializeTupleVariant for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, _value: &T) -> Result<()>
     where
@@ -703,7 +709,7 @@ impl<'a> ::serde::ser::SerializeTupleVariant for &'a mut StringOnlySerializer {
 
 impl<'a> ::serde::ser::SerializeMap for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_key<T>(&mut self, _key: &T) -> Result<()>
     where
@@ -726,7 +732,7 @@ impl<'a> ::serde::ser::SerializeMap for &'a mut StringOnlySerializer {
 
 impl<'a> ::serde::ser::SerializeStruct for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<()>
     where
@@ -742,7 +748,7 @@ impl<'a> ::serde::ser::SerializeStruct for &'a mut StringOnlySerializer {
 
 impl<'a> ::serde::ser::SerializeStructVariant for &'a mut StringOnlySerializer {
     type Ok = ();
-    type Error = Error;
+    type Error = crate::error::Error;
 
     fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<()>
     where

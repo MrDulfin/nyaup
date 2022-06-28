@@ -309,4 +309,26 @@ mod tests {
         let url_params = to_string(&params);
         assert!(url_params.is_err());
     }
+
+    #[test]
+    fn test_empty_seq() {
+        #[derive(Debug, Serialize)]
+        struct StructVariant {
+            array: Vec<u8>,
+        }
+        // top level struct variant is supported
+        let params = StructVariant { array: vec![] };
+        let url_params = to_string(&params);
+        assert!(url_params.is_ok());
+        assert_eq!(url_params.unwrap(), "array=");
+
+        #[derive(Debug, Serialize)]
+        struct OtherStructVariant {
+            null: (),
+        }
+        let params = OtherStructVariant { null: () };
+        let url_params = to_string(&params);
+        assert!(url_params.is_ok());
+        assert_eq!(url_params.unwrap(), "null=");
+    }
 }
