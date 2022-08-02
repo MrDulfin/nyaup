@@ -168,7 +168,7 @@ where
 
     #[inline]
     fn serialize_unit(self) -> Result<()> {
-        self.serialize_seq(Some(0)).map(|_| ())
+        Ok(())
     }
 
     #[inline]

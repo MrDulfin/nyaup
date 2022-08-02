@@ -329,6 +329,34 @@ mod tests {
         let params = OtherStructVariant { null: () };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "null=");
+        assert_eq!(url_params.unwrap(), "");
+    }
+
+    #[test]
+    fn test_nested_unit() {
+        #[derive(Debug, Serialize)]
+        struct StructVariant {
+            string: Option<String>,
+            number: Option<u8>,
+            unit1: (),
+            after_unit: String,
+            unit2: (),
+        }
+
+        let params = StructVariant {
+            string: Some("".to_string()),
+            number: None,
+            unit1: (),
+            after_unit: "hello".to_string(),
+            unit2: (),
+        };
+        let url_params = to_string(&params);
+        assert_eq!(url_params.unwrap(), "string=&after_unit=hello");
+    }
+
+    #[test]
+    fn test_unit() {
+        let url_params = to_string(&());
+        assert_eq!(url_params.unwrap(), "");
     }
 }
