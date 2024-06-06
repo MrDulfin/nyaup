@@ -210,7 +210,7 @@ where
     }
 
     #[inline]
-    fn serialize_seq(mut self, len: Option<usize>) -> Result<Self::SerializeSeq> {
+    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
         if !self.first_param {
             write!(self.writer, "&")?;
             self.first_param = false;
@@ -446,9 +446,9 @@ struct StringOnlySerializer {
     value: String,
 }
 
-impl Into<String> for StringOnlySerializer {
-    fn into(self) -> String {
-        self.value
+impl From<StringOnlySerializer> for String {
+    fn from(this: StringOnlySerializer) -> String {
+        this.value
     }
 }
 
@@ -773,10 +773,10 @@ impl<'a> ::serde::ser::SerializeStructVariant for &'a mut StringOnlySerializer {
 /// * `T` contains a nested struct,
 /// * `T` contains a map.
 #[inline]
-pub fn to_writer<W, T: ?Sized>(writer: W, value: &T) -> Result<()>
+pub fn to_writer<W, T>(writer: W, value: &T) -> Result<()>
 where
     W: io::Write,
-    T: ::serde::ser::Serialize,
+    T: ::serde::ser::Serialize + ?Sized,
 {
     let mut ser = Serializer::new(writer);
     value.serialize(&mut ser)?;
@@ -795,9 +795,9 @@ where
 /// * `T` contains a nested struct,
 /// * `T` contains a map.
 #[inline]
-pub fn to_vec<T: ?Sized>(value: &T) -> Result<Vec<u8>>
+pub fn to_vec<T>(value: &T) -> Result<Vec<u8>>
 where
-    T: ::serde::ser::Serialize,
+    T: ::serde::ser::Serialize + ?Sized,
 {
     let mut writer = Vec::with_capacity(128);
     to_writer(&mut writer, value)?;
@@ -815,9 +815,9 @@ where
 /// * `T` contains a nested struct,
 /// * `T` contains a map.
 #[inline]
-pub fn to_string<T: ?Sized>(value: &T) -> Result<String>
+pub fn to_string<T>(value: &T) -> Result<String>
 where
-    T: ::serde::ser::Serialize,
+    T: ::serde::ser::Serialize + ?Sized,
 {
     let vec = to_vec(value)?;
     let string = String::from_utf8(vec)?;

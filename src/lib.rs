@@ -153,7 +153,7 @@ mod tests {
             field: (usize, &'static str, f32),
         }
         let params = Params {
-            field: (42, "hello", 3.14),
+            field: (42, "hello", 3.15),
         };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
@@ -169,7 +169,7 @@ mod tests {
             field: TupleStruct,
         }
         let params = Params {
-            field: TupleStruct(42, "hello", 3.14),
+            field: TupleStruct(42, "hello", 3.15),
         };
         let url_params = to_string(&params);
         assert!(url_params.is_err());
