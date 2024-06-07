@@ -1,93 +1,13 @@
-//! # Serde URL Params
-//!
-//! This module provides a simple and flexible way for serializing data
-//! structures into URL parameters strings.
-//!
-//! A data structure can be converted to such string by
-//! [`serde_url_params::to_string`][to_string] function. There is also
-//! [`serde_url_params::to_vec`][to_vec] which serializes to a `Vec<u8>` and
-//! [`serde_url_params::to_writer`][to_writer] which serializes to any
-//! `io::Write` such as a File or a TCP stream.
-//!
-//! ```rust
-//! use serde::Serialize;
-//!
-//! #[derive(Serialize)]
-//! enum Filter {
-//!     Horror,
-//!     Comedy,
-//!     Thriller,
-//!     Drama,
-//! }
-//!
-//! #[derive(Serialize)]
-//! struct Options {
-//!     year: u16,
-//!     actors: Vec<String>,
-//! }
-//!
-//! #[derive(Serialize)]
-//! struct SearchRequest {
-//!     film: String,
-//!     per_page: Option<usize>,
-//!     next: Option<usize>,
-//!     filter: Vec<Filter>,
-//!     #[serde(flatten)]
-//!     options: Options,
-//! }
-//!
-//! fn main() -> Result<(), yaup::Error> {
-//!     // Some data structure.
-//!     let request = SearchRequest {
-//!         film: String::from("Fight Club"),
-//!         per_page: Some(20),
-//!         next: None,
-//!         filter: vec![Filter::Thriller, Filter::Drama],
-//!         options: Options {
-//!             year: 1999,
-//!             actors: vec!["Edward Norton".into()],
-//!         },
-//!     };
-//!
-//!     // Serialize it to a URL parameters string.
-//!     let p = yaup::to_string(&request).unwrap();
-//!     assert_eq!(
-//!         p,
-//!         "film=Fight+Club&per_page=20&filter=Thriller,Drama&year=1999&actors=Edward+Norton"
-//!     );
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Almost any type that implements Serde's `Serialize` trait can be serialized
-//! this way. This includes the built-in Rust standard library types `Vec<T>`
-//! as you can see in the above example, as well as structs or enums annotated
-//! with `#[derive(Serialize)]`. However, there are exceptions, for which it is
-//! not obvious how to serialize them into flat parameters list:
-//!
-//! * any simple top level value, since it does not have a parameter key, and
-//! * any nested struct, since it is not obvious how to flatten it,
-//! * any map, which is not flattened (i.e. annotated with `#[serde(flatten)]`).
-//!
-//! Further, any string is automatically URL encoded (or more precisely,
-//! percentage encoded). Elements in `Vec`s are serialized as repeated
-//! `key=value` pairs, where key is the field holding the vector. Newtype
-//! variants and variant structs are flattened by omitting the name of the
-//! variant resp. struct.
-//!
-//! [to_string]: ser/fn.to_string.html
-//! [to_vec]: ser/fn.to_vec.html
-//! [to_writer]: ser/fn.to_writer.html
-
-#![deny(warnings, missing_docs)]
+#![doc = include_str!("../README.md")]
+#![deny(missing_docs)]
 
 #[doc(inline)]
 pub use self::error::{Error, Result};
 #[doc(inline)]
 pub use self::ser::{to_string, to_vec, to_writer, Serializer};
 
-pub mod error;
-pub mod ser;
+mod error;
+mod ser;
 
 #[cfg(test)]
 mod tests {
@@ -125,10 +45,9 @@ mod tests {
             results: vec![Ok("pass"), Err("fail")],
         };
         let get_params = to_string(&request);
-        assert!(get_params.is_ok());
-        assert_eq!(
+        insta::assert_snapshot!(
             get_params.unwrap(),
-            "id=some_id&filter=filter1,filter2&optional_filter=filter3&select=A&select2=A,B&num=42&results=pass,fail"
+            @"?id=some_id&filter=filter1,filter2&option=null&optional_filter=filter3&select=A&select2=A,B&num=42&results=pass,fail"
         );
     }
 
@@ -143,7 +62,7 @@ mod tests {
         let params = Params { field: NewType(42) };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=42");
+        insta::assert_snapshot!(url_params.unwrap(), @"?field=42");
     }
 
     #[test]
@@ -153,11 +72,11 @@ mod tests {
             field: (usize, &'static str, f32),
         }
         let params = Params {
-            field: (42, "hello", 3.14),
+            field: (42, "hello", 3.15),
         };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=42,hello,3.14");
+        insta::assert_snapshot!(url_params.unwrap(), @"?field=42,hello,3.15");
     }
 
     #[test]
@@ -169,10 +88,10 @@ mod tests {
             field: TupleStruct,
         }
         let params = Params {
-            field: TupleStruct(42, "hello", 3.14),
+            field: TupleStruct(42, "hello", 3.15),
         };
         let url_params = to_string(&params);
-        assert!(url_params.is_err());
+        insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a tuple struct in place of a value. Only simple values are supported on the right-hand side of a parameter.");
     }
 
     #[test]
@@ -192,7 +111,7 @@ mod tests {
             };
             let url_params = to_string(&params);
             assert!(url_params.is_ok());
-            assert_eq!(url_params.unwrap(), "username=boxdot");
+            insta::assert_snapshot!(url_params.unwrap(), @"?username=boxdot");
         }
         // nested struct is not supported
         {
@@ -202,7 +121,7 @@ mod tests {
                 },
             };
             let url_params = to_string(&params);
-            assert!(url_params.is_err());
+            insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a struct in place of a value. Only simple values are supported on the right-hand side of a parameter.");
         }
     }
 
@@ -223,7 +142,7 @@ mod tests {
             };
             let url_params = to_string(&params);
             assert!(url_params.is_ok());
-            assert_eq!(url_params.unwrap(), "username=boxdot");
+            insta::assert_snapshot!(url_params.unwrap(), @"?username=boxdot");
         }
         // nested struct variant is not supported
         {
@@ -233,7 +152,7 @@ mod tests {
                 },
             };
             let url_params = to_string(&params);
-            assert!(url_params.is_err());
+            insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a struct variant in place of a value. Only simple values are supported on the right-hand side of a parameter.");
         }
     }
 
@@ -248,7 +167,7 @@ mod tests {
         };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=%7Bsome%3Dweird%26param%7D");
+        insta::assert_snapshot!(url_params.unwrap(), @"?field=%7Bsome%3Dweird%26param%7D");
     }
 
     #[test]
@@ -274,9 +193,9 @@ mod tests {
             }),
         };
         let url_params = to_string(&params);
-        assert_eq!(
-            url_params.expect("failed serialization"),
-            "x=1&real=0&imag=1"
+        insta::assert_snapshot!(
+            url_params.unwrap(),
+            @"?x=1&real=0&imag=1"
         );
     }
 
@@ -307,7 +226,7 @@ mod tests {
             ],
         };
         let url_params = to_string(&params);
-        assert!(url_params.is_err());
+        insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a sequence at the top level. Only key-value shapes are supported at the top level of a query parameter.");
     }
 
     #[test]
@@ -319,8 +238,7 @@ mod tests {
         // top level struct variant is supported
         let params = StructVariant { array: vec![] };
         let url_params = to_string(&params);
-        assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "array=");
+        insta::assert_snapshot!(url_params.unwrap(), @"?array=");
 
         #[derive(Debug, Serialize)]
         struct OtherStructVariant {
@@ -328,8 +246,24 @@ mod tests {
         }
         let params = OtherStructVariant { null: () };
         let url_params = to_string(&params);
-        assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "");
+        insta::assert_snapshot!(url_params.unwrap(), @"?null=");
+    }
+
+    #[test]
+    fn test_empty_opt_seq_with_other_param() {
+        // See https://github.com/meilisearch/yaup/issues/4
+        #[derive(Debug, Serialize)]
+        struct StructVariant {
+            array: Option<Vec<u8>>,
+            other: bool,
+        }
+        // top level struct variant is supported
+        let params = StructVariant {
+            array: Some(vec![]),
+            other: true,
+        };
+        let url_params = to_string(&params);
+        insta::assert_snapshot!(url_params.unwrap(), @"?array=&other=true");
     }
 
     #[test]
@@ -351,12 +285,18 @@ mod tests {
             unit2: (),
         };
         let url_params = to_string(&params);
-        assert_eq!(url_params.unwrap(), "string=&after_unit=hello");
+        insta::assert_snapshot!(url_params.unwrap(), @"?string=&number=null&unit1=&after_unit=hello&unit2=");
     }
 
     #[test]
     fn test_unit() {
         let url_params = to_string(&());
-        assert_eq!(url_params.unwrap(), "");
+        insta::assert_snapshot!(url_params.unwrap(), @"");
+    }
+
+    #[test]
+    fn test_nested_sequences() {
+        let url_params = to_string(&maplit::hashmap! { "a" => vec![vec![1, 2], vec![3, 4]]});
+        insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a sequence in place of a value. Only simple values are supported on the right-hand side of a parameter.");
     }
 }

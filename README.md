@@ -1,20 +1,22 @@
 # Yaup - Yet Another URL Params crate
 
-This is a fork of [`serde_url_params`](https://github.com/boxdot/serde-url-params-rs).
-I updated the way of serializing arrays:
-Serializing `{ "food": ["baguette", "with", "cheese"] }`
-- With `serde_url_params` returns `food=baguette&food=with&food=cheese`.
-- With `yaup` it returns `food=baguette,with,cheese`.
+Serialize your structures as query parameters.
+I made this crate because I didn't find anything that matched the structure of the query parameters used in Meilisearch.
 
-And I got rids of the serialization of embedded structures.
+Specificities of this query parameters format:
+- The crate writes the initial `?` if there are parameters to send.
+- You can only serialize structures that follow a "key-value" shape, like structures, `HashMap`, `BTreeMap`, etc.
+- Sequences (arrays, vectors, tuples, etc) are comma-separated. `{ doggo: vec!["kefir", "echo"] }` serialize as `?doggo=kefir,echo`.
+- Empty and `null` values are not ignored. `{ doggo: Vec::new(), catto: None }` serialize as `?doggo=&catto=null`. 
+- Return an error if you try to serialize a structure with multiple levels of key-value structures (i.e., an object containing a `HashMap` for example).
 
 ## Example
 
 ```rust
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 enum Filter { New, Registered, Blocked }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 struct Params {
     cursor: Option<usize>,
     per_page: Option<usize>,
@@ -30,16 +32,22 @@ let params = Params {
 };
 assert_eq!(
     yaup::to_string(&params).unwrap(),
-    "cursor=42&username=boxdot&filter=New,Blocked"
+    "?cursor=42&per_page=null&username=tamo&filter=New,Blocked"
 );
 ```
+## Thanks
+
+This was originally a fork of [`serde_url_params`](https://github.com/boxdot/serde-url-params-rs) which is still maintained.
+Thanks, `boxdot`, for the initial code.
+
+Everything has been rewritten from scratch for the v0.3.0.
 
 ## License
 
  * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-   http://www.apache.org/licenses/LICENSE-2.0)
+   <http://www.apache.org/licenses/LICENSE-2.0>)
  * MIT License ([LICENSE-MIT](LICENSE-MIT) or
-   http://opensource.org/licenses/MIT)
+   <http://opensource.org/licenses/MIT>)
 
 ### Contribution
 
