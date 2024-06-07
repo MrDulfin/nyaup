@@ -16,4 +16,5 @@ serde = "1"
 url = "2"
 
 [dev-dependencies]
+insta = "1.39.0"
 serde = { version = "1", features = ["derive"] }

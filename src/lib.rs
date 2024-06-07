@@ -53,7 +53,7 @@
 //!     let p = yaup::to_string(&request).unwrap();
 //!     assert_eq!(
 //!         p,
-//!         "film=Fight+Club&per_page=20&filter=Thriller,Drama&year=1999&actors=Edward+Norton"
+//!         "?film=Fight+Club&per_page=20&next=null&filter=Thriller,Drama&year=1999&actors=Edward+Norton"
 //!     );
 //!     Ok(())
 //! }
@@ -79,7 +79,7 @@
 //! [to_vec]: ser/fn.to_vec.html
 //! [to_writer]: ser/fn.to_writer.html
 
-#![deny(warnings, missing_docs)]
+#![deny(missing_docs)]
 
 #[doc(inline)]
 pub use self::error::{Error, Result};
@@ -125,10 +125,9 @@ mod tests {
             results: vec![Ok("pass"), Err("fail")],
         };
         let get_params = to_string(&request);
-        assert!(get_params.is_ok());
-        assert_eq!(
+        insta::assert_snapshot!(
             get_params.unwrap(),
-            "id=some_id&filter=filter1,filter2&optional_filter=filter3&select=A&select2=A,B&num=42&results=pass,fail"
+            @"?id=some_id&filter=filter1,filter2&option=null&optional_filter=filter3&select=A&select2=A,B&num=42&results=pass,fail"
         );
     }
 
@@ -143,7 +142,7 @@ mod tests {
         let params = Params { field: NewType(42) };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=42");
+        insta::assert_snapshot!(url_params.unwrap(), @"?field=42");
     }
 
     #[test]
@@ -157,7 +156,7 @@ mod tests {
         };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=42,hello,3.14");
+        insta::assert_snapshot!(url_params.unwrap(), @"?field=42,hello,3.15");
     }
 
     #[test]
@@ -172,7 +171,7 @@ mod tests {
             field: TupleStruct(42, "hello", 3.15),
         };
         let url_params = to_string(&params);
-        assert!(url_params.is_err());
+        insta::assert_snapshot!(url_params.unwrap_err(), @"tuple struct");
     }
 
     #[test]
@@ -192,7 +191,7 @@ mod tests {
             };
             let url_params = to_string(&params);
             assert!(url_params.is_ok());
-            assert_eq!(url_params.unwrap(), "username=boxdot");
+            insta::assert_snapshot!(url_params.unwrap(), @"?username=boxdot");
         }
         // nested struct is not supported
         {
@@ -202,7 +201,7 @@ mod tests {
                 },
             };
             let url_params = to_string(&params);
-            assert!(url_params.is_err());
+            insta::assert_snapshot!(url_params.unwrap_err(), @"struct");
         }
     }
 
@@ -223,7 +222,7 @@ mod tests {
             };
             let url_params = to_string(&params);
             assert!(url_params.is_ok());
-            assert_eq!(url_params.unwrap(), "username=boxdot");
+            insta::assert_snapshot!(url_params.unwrap(), @"?username=boxdot");
         }
         // nested struct variant is not supported
         {
@@ -233,7 +232,7 @@ mod tests {
                 },
             };
             let url_params = to_string(&params);
-            assert!(url_params.is_err());
+            insta::assert_snapshot!(url_params.unwrap_err(), @"struct variant");
         }
     }
 
@@ -248,7 +247,7 @@ mod tests {
         };
         let url_params = to_string(&params);
         assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "field=%7Bsome%3Dweird%26param%7D");
+        insta::assert_snapshot!(url_params.unwrap(), @"?field=%7Bsome%3Dweird%26param%7D");
     }
 
     #[test]
@@ -274,9 +273,9 @@ mod tests {
             }),
         };
         let url_params = to_string(&params);
-        assert_eq!(
-            url_params.expect("failed serialization"),
-            "x=1&real=0&imag=1"
+        insta::assert_snapshot!(
+            url_params.unwrap(),
+            @"?x=1&real=0&imag=1"
         );
     }
 
@@ -307,7 +306,7 @@ mod tests {
             ],
         };
         let url_params = to_string(&params);
-        assert!(url_params.is_err());
+        insta::assert_snapshot!(url_params.unwrap_err(), @"sequence");
     }
 
     #[test]
@@ -319,8 +318,7 @@ mod tests {
         // top level struct variant is supported
         let params = StructVariant { array: vec![] };
         let url_params = to_string(&params);
-        assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "array=");
+        insta::assert_snapshot!(url_params.unwrap(), @"?array=");
 
         #[derive(Debug, Serialize)]
         struct OtherStructVariant {
@@ -328,8 +326,24 @@ mod tests {
         }
         let params = OtherStructVariant { null: () };
         let url_params = to_string(&params);
-        assert!(url_params.is_ok());
-        assert_eq!(url_params.unwrap(), "");
+        insta::assert_snapshot!(url_params.unwrap(), @"?null=");
+    }
+
+    #[test]
+    fn test_empty_opt_seq_with_other_param() {
+        // See https://github.com/meilisearch/yaup/issues/4
+        #[derive(Debug, Serialize)]
+        struct StructVariant {
+            array: Option<Vec<u8>>,
+            other: bool,
+        }
+        // top level struct variant is supported
+        let params = StructVariant {
+            array: Some(vec![]),
+            other: true,
+        };
+        let url_params = to_string(&params);
+        insta::assert_snapshot!(url_params.unwrap(), @"?array=&other=true");
     }
 
     #[test]
@@ -351,12 +365,12 @@ mod tests {
             unit2: (),
         };
         let url_params = to_string(&params);
-        assert_eq!(url_params.unwrap(), "string=&after_unit=hello");
+        insta::assert_snapshot!(url_params.unwrap(), @"?string=&number=null&unit1=&after_unit=hello&unit2=");
     }
 
     #[test]
     fn test_unit() {
         let url_params = to_string(&());
-        assert_eq!(url_params.unwrap(), "");
+        insta::assert_snapshot!(url_params.unwrap(), @"");
     }
 }

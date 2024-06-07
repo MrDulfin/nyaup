@@ -16,7 +16,7 @@ pub enum Error {
 }
 
 /// Alias for `Result` with error type `serde_url_params::Error`.
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 impl Error {
     /// Creates a new error when a type is not supported for serializing into
