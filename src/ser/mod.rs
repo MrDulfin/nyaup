@@ -38,72 +38,72 @@ where
 
     #[inline]
     fn serialize_bool(self, _v: bool) -> Result<()> {
-        Err(Self::Error::unsupported("bool"))
+        Err(Self::Error::UnsupportedAtTopLevel("bool"))
     }
 
     #[inline]
     fn serialize_i8(self, _v: i8) -> Result<()> {
-        Err(Self::Error::unsupported("i8"))
+        Err(Self::Error::UnsupportedAtTopLevel("i8"))
     }
 
     #[inline]
     fn serialize_i16(self, _v: i16) -> Result<()> {
-        Err(Self::Error::unsupported("i16"))
+        Err(Self::Error::UnsupportedAtTopLevel("i16"))
     }
 
     #[inline]
     fn serialize_i32(self, _v: i32) -> Result<()> {
-        Err(Self::Error::unsupported("i32"))
+        Err(Self::Error::UnsupportedAtTopLevel("i32"))
     }
 
     #[inline]
     fn serialize_i64(self, _v: i64) -> Result<()> {
-        Err(Self::Error::unsupported("i64"))
+        Err(Self::Error::UnsupportedAtTopLevel("i64"))
     }
 
     #[inline]
     fn serialize_u8(self, _v: u8) -> Result<()> {
-        Err(Self::Error::unsupported("u8"))
+        Err(Self::Error::UnsupportedAtTopLevel("u8"))
     }
 
     #[inline]
     fn serialize_u16(self, _v: u16) -> Result<()> {
-        Err(Self::Error::unsupported("u16"))
+        Err(Self::Error::UnsupportedAtTopLevel("u16"))
     }
 
     #[inline]
     fn serialize_u32(self, _v: u32) -> Result<()> {
-        Err(Self::Error::unsupported("u32"))
+        Err(Self::Error::UnsupportedAtTopLevel("u32"))
     }
 
     #[inline]
     fn serialize_u64(self, _v: u64) -> Result<()> {
-        Err(Self::Error::unsupported("u64"))
+        Err(Self::Error::UnsupportedAtTopLevel("u64"))
     }
 
     #[inline]
     fn serialize_f32(self, _v: f32) -> Result<()> {
-        Err(Self::Error::unsupported("f32"))
+        Err(Self::Error::UnsupportedAtTopLevel("f32"))
     }
 
     #[inline]
     fn serialize_f64(self, _v: f64) -> Result<()> {
-        Err(Self::Error::unsupported("f64"))
+        Err(Self::Error::UnsupportedAtTopLevel("f64"))
     }
 
     #[inline]
     fn serialize_char(self, _v: char) -> Result<()> {
-        Err(Self::Error::unsupported("char"))
+        Err(Self::Error::UnsupportedAtTopLevel("char"))
     }
 
     #[inline]
     fn serialize_str(self, _v: &str) -> Result<()> {
-        Err(Self::Error::unsupported("str"))
+        Err(Self::Error::UnsupportedAtTopLevel("str"))
     }
 
     #[inline]
     fn serialize_bytes(self, _v: &[u8]) -> Result<()> {
-        Err(Self::Error::unsupported("bytes"))
+        Err(Self::Error::UnsupportedAtTopLevel("bytes"))
     }
 
     #[inline]
@@ -126,7 +126,7 @@ where
 
     #[inline]
     fn serialize_unit_struct(self, _name: &'static str) -> Result<()> {
-        Err(Self::Error::unsupported("unit struct"))
+        Err(Self::Error::UnsupportedAtTopLevel("unit struct"))
     }
 
     #[inline]
@@ -136,7 +136,7 @@ where
         _variant_index: u32,
         _variant: &'static str,
     ) -> Result<()> {
-        Err(Self::Error::unsupported("unit variant"))
+        Err(Self::Error::UnsupportedAtTopLevel("unit variant"))
     }
 
     #[inline]
@@ -163,12 +163,12 @@ where
 
     #[inline]
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
-        Err(Self::Error::unsupported("sequence"))
+        Err(Self::Error::UnsupportedAtTopLevel("sequence"))
     }
 
     #[inline]
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
-        Err(Self::Error::unsupported("tuple"))
+        Err(Self::Error::UnsupportedAtTopLevel("tuple"))
     }
 
     #[inline]
@@ -177,7 +177,7 @@ where
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Err(Self::Error::unsupported("tuple struct"))
+        Err(Self::Error::UnsupportedAtTopLevel("tuple struct"))
     }
 
     #[inline]
@@ -188,7 +188,7 @@ where
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        Err(Self::Error::unsupported("tuple variant"))
+        Err(Self::Error::UnsupportedAtTopLevel("tuple variant"))
     }
 
     #[inline]

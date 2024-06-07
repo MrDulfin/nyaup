@@ -171,7 +171,7 @@ mod tests {
             field: TupleStruct(42, "hello", 3.15),
         };
         let url_params = to_string(&params);
-        insta::assert_snapshot!(url_params.unwrap_err(), @"tuple struct");
+        insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a tuple struct in place of a value. Only simple values are supported on the right-hand side of a parameter.");
     }
 
     #[test]
@@ -201,7 +201,7 @@ mod tests {
                 },
             };
             let url_params = to_string(&params);
-            insta::assert_snapshot!(url_params.unwrap_err(), @"struct");
+            insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a struct in place of a value. Only simple values are supported on the right-hand side of a parameter.");
         }
     }
 
@@ -232,7 +232,7 @@ mod tests {
                 },
             };
             let url_params = to_string(&params);
-            insta::assert_snapshot!(url_params.unwrap_err(), @"struct variant");
+            insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a struct variant in place of a value. Only simple values are supported on the right-hand side of a parameter.");
         }
     }
 
@@ -306,7 +306,7 @@ mod tests {
             ],
         };
         let url_params = to_string(&params);
-        insta::assert_snapshot!(url_params.unwrap_err(), @"sequence");
+        insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a sequence at the top level. Only key-value shapes are supported at the top level of a query parameter.");
     }
 
     #[test]
@@ -372,5 +372,11 @@ mod tests {
     fn test_unit() {
         let url_params = to_string(&());
         insta::assert_snapshot!(url_params.unwrap(), @"");
+    }
+
+    #[test]
+    fn test_nested_sequences() {
+        let url_params = to_string(&maplit::hashmap! { "a" => vec![vec![1, 2], vec![3, 4]]});
+        insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a sequence in place of a value. Only simple values are supported on the right-hand side of a parameter.");
     }
 }

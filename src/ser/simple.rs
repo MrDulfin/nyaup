@@ -6,14 +6,25 @@ use serde::ser::SerializeSeq;
 
 pub struct Serializer<W> {
     writer: W,
+    sequence_allowed: bool,
 }
 
 impl<W> Serializer<W>
 where
     W: io::Write,
 {
-    pub fn new(writer: W) -> Self {
-        Serializer { writer }
+    pub fn new_from_toplevel(writer: W) -> Self {
+        Serializer {
+            writer,
+            sequence_allowed: true,
+        }
+    }
+
+    pub fn new_from_seq(writer: W) -> Self {
+        Serializer {
+            writer,
+            sequence_allowed: false,
+        }
     }
 }
 impl<'a, W> ::serde::ser::Serializer for &'a mut Serializer<W>
@@ -99,6 +110,9 @@ where
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
+        if !self.sequence_allowed {
+            return Err(Self::Error::UnsupportedNestedStruct("bytes"));
+        }
         let mut serializer = super::seq::Serializer::new(&mut self.writer);
         for v in v {
             serializer.serialize_element(v)?;
@@ -123,7 +137,7 @@ where
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
-        Err(Self::Error::unsupported("unit struct"))
+        Err(Self::Error::UnsupportedNestedStruct("unit struct"))
     }
 
     fn serialize_unit_variant(
@@ -161,11 +175,19 @@ where
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        Ok(super::seq::Serializer::new(&mut self.writer))
+        if self.sequence_allowed {
+            Ok(super::seq::Serializer::new(&mut self.writer))
+        } else {
+            Err(Self::Error::UnsupportedNestedStruct("sequence"))
+        }
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        Ok(super::seq::Serializer::new(&mut self.writer))
+        if self.sequence_allowed {
+            Ok(super::seq::Serializer::new(&mut self.writer))
+        } else {
+            Err(Self::Error::UnsupportedNestedStruct("sequence"))
+        }
     }
 
     fn serialize_tuple_struct(
@@ -173,7 +195,7 @@ where
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
-        Err(Self::Error::unsupported("tuple struct"))
+        Err(Self::Error::UnsupportedNestedStruct("tuple struct"))
     }
 
     fn serialize_tuple_variant(
@@ -183,11 +205,11 @@ where
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        Err(Self::Error::unsupported("tuple variant"))
+        Err(Self::Error::UnsupportedNestedStruct("tuple variant"))
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        Err(Self::Error::unsupported("map"))
+        Err(Self::Error::UnsupportedNestedStruct("map"))
     }
 
     fn serialize_struct(
@@ -195,7 +217,7 @@ where
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        Err(Self::Error::unsupported("struct"))
+        Err(Self::Error::UnsupportedNestedStruct("struct"))
     }
 
     fn serialize_struct_variant(
@@ -205,6 +227,6 @@ where
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(Self::Error::unsupported("struct variant"))
+        Err(Self::Error::UnsupportedNestedStruct("struct variant"))
     }
 }

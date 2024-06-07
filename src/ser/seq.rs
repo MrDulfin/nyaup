@@ -34,7 +34,7 @@ where
             write!(self.writer, ",")?;
         }
 
-        let mut simple = super::simple::Serializer::new(&mut self.writer);
+        let mut simple = super::simple::Serializer::new_from_seq(&mut self.writer);
         value.serialize(&mut simple)?;
         Ok(())
     }

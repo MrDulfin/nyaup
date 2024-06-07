@@ -14,7 +14,9 @@ edition = "2021"
 [dependencies]
 serde = "1"
 form_urlencoded = "1.2.1"
+thiserror = "1.0.61"
 
 [dev-dependencies]
 insta = "1.39.0"
+maplit = "1.0.2"
 serde = { version = "1", features = ["derive"] }
