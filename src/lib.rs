@@ -299,4 +299,36 @@ mod tests {
         let url_params = to_string(&maplit::hashmap! { "a" => vec![vec![1, 2], vec![3, 4]]});
         insta::assert_snapshot!(url_params.unwrap_err(), @"Tried to serialize a sequence in place of a value. Only simple values are supported on the right-hand side of a parameter.");
     }
+
+    #[test]
+    fn test_sequence_as_key() {
+        let url_params =
+            to_string(&maplit::hashmap! { vec![1, 2] => vec![1, 2], vec![0] => vec![0] });
+        insta::assert_snapshot!(url_params.unwrap(), @"?1,2=1,2&0=0");
+    }
+
+    #[test]
+    fn test_transparent_vec() {
+        #[derive(Debug, Serialize)]
+        #[serde(transparent)]
+        struct Struct {
+            transparent: Vec<usize>,
+        }
+
+        #[derive(Debug, Serialize)]
+        struct TopLevelStruct {
+            transparent: Struct,
+            hello: bool,
+        }
+
+        let url_params = TopLevelStruct {
+            transparent: Struct {
+                transparent: vec![0, 1, 2],
+            },
+            hello: true,
+        };
+
+        let url_params = to_string(&url_params);
+        insta::assert_snapshot!(url_params.unwrap(), @"?transparent=0,1,2&hello=true");
+    }
 }
