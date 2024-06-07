@@ -93,7 +93,7 @@ where
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        let v = String::from_iter(url::form_urlencoded::byte_serialize(v.as_bytes()));
+        let v = String::from_iter(form_urlencoded::byte_serialize(v.as_bytes()));
         write!(self.writer, "{v}")?;
         Ok(())
     }
