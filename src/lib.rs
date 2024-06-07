@@ -6,8 +6,8 @@ pub use self::error::{Error, Result};
 #[doc(inline)]
 pub use self::ser::{to_string, to_vec, to_writer, Serializer};
 
-pub mod error;
-pub mod ser;
+mod error;
+mod ser;
 
 #[cfg(test)]
 mod tests {
