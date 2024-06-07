@@ -40,7 +40,7 @@ assert_eq!(
 This was originally a fork of [`serde_url_params`](https://github.com/boxdot/serde-url-params-rs) which is still maintained.
 Thanks, `boxdot`, for the initial code.
 
-Everything has been rewritten from scratch for the v0.2.0.
+Everything has been rewritten from scratch for the v0.3.0.
 
 ## License
 

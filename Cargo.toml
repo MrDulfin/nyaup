@@ -1,11 +1,11 @@
 [package]
 name = "yaup"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["tamo <tamo@meilisearch.com>"]
 license = "MIT/Apache-2.0"
 description = "URL parameters serialization"
-repository = "https://github.com/irevoire/yaup"
-keywords = ["serde", "serialization", "url"]
+repository = "https://github.com/meilisearch/yaup"
+keywords = ["serde", "serialization", "url", "meilisearch"]
 categories = ["encoding"]
 readme = "README.md"
 include = ["Cargo.toml", "src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
