@@ -4,30 +4,31 @@ use std::io;
 
 use serde::ser::SerializeSeq;
 
-pub struct Serializer<W> {
-    writer: W,
+pub struct Serializer<'a, W> {
+    writer: &'a mut W,
     sequence_allowed: bool,
 }
 
-impl<W> Serializer<W>
+impl<'a, W> Serializer<'a, W>
 where
     W: io::Write,
 {
-    pub fn new_from_toplevel(writer: W) -> Self {
+    pub fn new_from_toplevel(writer: &'a mut W) -> Self {
         Serializer {
             writer,
             sequence_allowed: true,
         }
     }
 
-    pub fn new_from_seq(writer: W) -> Self {
+    pub fn new_from_seq(writer: &'a mut W) -> Self {
         Serializer {
             writer,
             sequence_allowed: false,
         }
     }
 }
-impl<'a, W> ::serde::ser::Serializer for &'a mut Serializer<W>
+
+impl<'a, W> ::serde::ser::Serializer for Serializer<'a, W>
 where
     W: io::Write,
 {
@@ -113,7 +114,7 @@ where
         if !self.sequence_allowed {
             return Err(Self::Error::UnsupportedNestedStruct("bytes"));
         }
-        let mut serializer = super::seq::Serializer::new(&mut self.writer);
+        let mut serializer = super::seq::Serializer::new(&mut *self.writer);
         for v in v {
             serializer.serialize_element(v)?;
         }
@@ -176,7 +177,7 @@ where
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         if self.sequence_allowed {
-            Ok(super::seq::Serializer::new(&mut self.writer))
+            Ok(super::seq::Serializer::new(self.writer))
         } else {
             Err(Self::Error::UnsupportedNestedStruct("sequence"))
         }
@@ -184,7 +185,7 @@ where
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
         if self.sequence_allowed {
-            Ok(super::seq::Serializer::new(&mut self.writer))
+            Ok(super::seq::Serializer::new(self.writer))
         } else {
             Err(Self::Error::UnsupportedNestedStruct("sequence"))
         }
