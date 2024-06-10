@@ -34,8 +34,8 @@ where
         } else {
             write!(self.writer, "&")?;
         }
-        let mut simple = super::simple::Serializer::new_from_toplevel(&mut self.writer);
-        key.serialize(&mut simple)?;
+        let simple = super::simple::Serializer::new_from_toplevel(&mut *self.writer);
+        key.serialize(simple)?;
         write!(self.writer, "=")?;
         Ok(())
     }
@@ -44,8 +44,8 @@ where
     where
         T: ?Sized + ::serde::ser::Serialize,
     {
-        let mut simple = super::simple::Serializer::new_from_toplevel(&mut self.writer);
-        value.serialize(&mut simple)?;
+        let simple = super::simple::Serializer::new_from_toplevel(&mut *self.writer);
+        value.serialize(simple)?;
         Ok(())
     }
 
@@ -71,8 +71,8 @@ where
             write!(self.writer, "&")?;
         }
         write!(self.writer, "{key}=")?;
-        let mut simple = super::simple::Serializer::new_from_toplevel(&mut self.writer);
-        value.serialize(&mut simple)?;
+        let simple = super::simple::Serializer::new_from_toplevel(&mut *self.writer);
+        value.serialize(simple)?;
         Ok(())
     }
 
