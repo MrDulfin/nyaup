@@ -1,6 +1,7 @@
 use std::io;
 
 pub struct Serializer<'a, W> {
+    key: &'a str,
     writer: &'a mut W,
     first_param: bool,
 }
@@ -9,8 +10,9 @@ impl<'a, W> Serializer<'a, W>
 where
     W: io::Write,
 {
-    pub fn new(writer: &'a mut W) -> Self {
+    pub fn new(key: &'a str, writer: &'a mut W) -> Self {
         Serializer {
+            key,
             writer,
             first_param: true,
         }
@@ -28,14 +30,14 @@ where
     where
         T: ?Sized + serde::Serialize,
     {
-        if self.first_param {
-            self.first_param = false;
-        } else {
+        if !self.first_param {
             write!(self.writer, ",")?;
         }
-
-        let simple = super::simple::Serializer::new_from_seq(&mut *self.writer);
+        let simple = super::simple::Serializer::new_from_seq(self.first_param, self.key, &mut *self.writer);
         value.serialize(simple)?;
+        if self.first_param {
+            self.first_param = false;
+        }
         Ok(())
     }
 

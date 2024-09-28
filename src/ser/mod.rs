@@ -194,13 +194,13 @@ where
     #[inline]
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
         write!(self.writer, "?")?;
-        Ok(map::Serializer::new(&mut self.writer))
+        Ok(map::Serializer::new(&mut self.writer, true))
     }
 
     #[inline]
     fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
         write!(self.writer, "?")?;
-        Ok(map::Serializer::new(&mut self.writer))
+        Ok(map::Serializer::new(&mut self.writer, false))
     }
 
     #[inline]
@@ -212,7 +212,7 @@ where
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
         write!(self.writer, "?")?;
-        Ok(map::Serializer::new(&mut self.writer))
+        Ok(map::Serializer::new(&mut self.writer, false))
     }
 }
 

@@ -33,7 +33,7 @@ mod tests {
     }
 
     #[test]
-    fn test() {
+    fn test_1111() {
         let request = Request {
             id: String::from("some_id"),
             filter: vec![String::from("filter1"), String::from("filter2")],
@@ -47,7 +47,7 @@ mod tests {
         let get_params = to_string(&request);
         insta::assert_snapshot!(
             get_params.unwrap(),
-            @"?id=some_id&filter=filter1,filter2&option=null&optional_filter=filter3&select=A&select2=A,B&num=42&results=pass,fail"
+            @"?id=some_id&filter=filter1,filter2&optional_filter=filter3&select=A&select2=A,B&num=42&results=pass,fail"
         );
     }
 
@@ -246,7 +246,7 @@ mod tests {
         }
         let params = OtherStructVariant { null: () };
         let url_params = to_string(&params);
-        insta::assert_snapshot!(url_params.unwrap(), @"?null=");
+        insta::assert_snapshot!(url_params.unwrap(), @"?");
     }
 
     #[test]

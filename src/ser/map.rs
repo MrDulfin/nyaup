@@ -2,6 +2,8 @@ use crate::error::Result;
 use std::io;
 
 pub struct Serializer<'a, W> {
+    seq: bool,
+    key: &'a str,
     writer: &'a mut W,
     first_param: bool,
 }
@@ -10,8 +12,10 @@ impl<'a, W> Serializer<'a, W>
 where
     W: io::Write,
 {
-    pub fn new(writer: &'a mut W) -> Self {
+    pub fn new(writer: &'a mut W, seq: bool) -> Self {
         Serializer {
+            seq,
+            key: "",
             writer,
             first_param: true,
         }
@@ -29,14 +33,15 @@ where
     where
         T: ?Sized + ::serde::ser::Serialize,
     {
-        if self.first_param {
-            self.first_param = false;
-        } else {
+        if !self.first_param {
             write!(self.writer, "&")?;
         }
-        let simple = super::simple::Serializer::new_from_toplevel(&mut *self.writer);
+        let simple = super::simple::Serializer::new_from_toplevel(self.first_param, self.key, &mut *self.writer);
         key.serialize(simple)?;
         write!(self.writer, "=")?;
+        if self.first_param {
+            self.first_param = false;
+        }
         Ok(())
     }
 
@@ -44,7 +49,7 @@ where
     where
         T: ?Sized + ::serde::ser::Serialize,
     {
-        let simple = super::simple::Serializer::new_from_toplevel(&mut *self.writer);
+        let simple = super::simple::Serializer::new_from_toplevel(self.first_param, &self.key, &mut *self.writer);
         value.serialize(simple)?;
         Ok(())
     }
@@ -65,14 +70,11 @@ where
     where
         T: ?Sized + ::serde::ser::Serialize,
     {
+        let simple = super::simple::Serializer::new_from_toplevel(self.first_param, key, &mut *self.writer);
+        value.serialize(simple)?;
         if self.first_param {
             self.first_param = false;
-        } else {
-            write!(self.writer, "&")?;
         }
-        write!(self.writer, "{key}=")?;
-        let simple = super::simple::Serializer::new_from_toplevel(&mut *self.writer);
-        value.serialize(simple)?;
         Ok(())
     }
 
