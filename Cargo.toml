@@ -1,5 +1,5 @@
 [package]
-name = "yaup"
+name = "nyaup"
 version = "0.3.1"
 authors = ["tamo <tamo@meilisearch.com>"]
 license = "MIT/Apache-2.0"
