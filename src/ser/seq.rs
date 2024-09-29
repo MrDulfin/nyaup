@@ -33,7 +33,7 @@ where
         if !self.first_param {
             write!(self.writer, ",")?;
         }
-        let simple = super::simple::Serializer::new_from_seq(self.first_param, self.key, &mut *self.writer);
+        let simple = super::simple::Serializer::new_from_seq(&mut self.first_param, self.key, &mut *self.writer);
         value.serialize(simple)?;
         if self.first_param {
             self.first_param = false;

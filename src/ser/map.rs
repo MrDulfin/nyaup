@@ -36,9 +36,9 @@ where
         if !self.first_param {
             write!(self.writer, "&")?;
         }
-        let simple = super::simple::Serializer::new_from_toplevel(self.first_param, self.key, &mut *self.writer);
+        let simple = super::simple::Serializer::new_from_toplevel(false, &mut self.first_param, self.key, &mut *self.writer);
         key.serialize(simple)?;
-        write!(self.writer, "=")?;
+        // write!(self.writer, "=")?;
         if self.first_param {
             self.first_param = false;
         }
@@ -49,7 +49,7 @@ where
     where
         T: ?Sized + ::serde::ser::Serialize,
     {
-        let simple = super::simple::Serializer::new_from_toplevel(self.first_param, &self.key, &mut *self.writer);
+        let simple = super::simple::Serializer::new_from_toplevel(false, &mut self.first_param, &self.key, &mut *self.writer);
         value.serialize(simple)?;
         Ok(())
     }
@@ -70,11 +70,8 @@ where
     where
         T: ?Sized + ::serde::ser::Serialize,
     {
-        let simple = super::simple::Serializer::new_from_toplevel(self.first_param, key, &mut *self.writer);
+        let simple = super::simple::Serializer::new_from_toplevel(true, &mut self.first_param, key, &mut *self.writer);
         value.serialize(simple)?;
-        if self.first_param {
-            self.first_param = false;
-        }
         Ok(())
     }
 

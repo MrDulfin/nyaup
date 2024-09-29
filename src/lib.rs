@@ -238,7 +238,7 @@ mod tests {
         // top level struct variant is supported
         let params = StructVariant { array: vec![] };
         let url_params = to_string(&params);
-        insta::assert_snapshot!(url_params.unwrap(), @"?array=");
+        insta::assert_snapshot!(url_params.unwrap(), @"?");
 
         #[derive(Debug, Serialize)]
         struct OtherStructVariant {
@@ -263,7 +263,7 @@ mod tests {
             other: true,
         };
         let url_params = to_string(&params);
-        insta::assert_snapshot!(url_params.unwrap(), @"?array=&other=true");
+        insta::assert_snapshot!(url_params.unwrap(), @"?other=true");
     }
 
     #[test]
@@ -285,7 +285,7 @@ mod tests {
             unit2: (),
         };
         let url_params = to_string(&params);
-        insta::assert_snapshot!(url_params.unwrap(), @"?string=&number=null&unit1=&after_unit=hello&unit2=");
+        insta::assert_snapshot!(url_params.unwrap(), @"?after_unit=hello");
     }
 
     #[test]

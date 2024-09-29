@@ -1,6 +1,6 @@
 # Nyaup - Not Yet Another URL Params crate
 
-### This is a fork of the [Yaup](https://github.com/meilisearch/yaup) crate, meant to solve my problem of yaup serializing `None`s as `null`. Currently the `tests::test_flattened_struct`, `tests::test_nested_unit`, `tests::test_sequence_as_key` tests do not pass, and I have no plans to fix them, so the examples may or may not work.
+### This is a fork of the [Yaup](https://github.com/meilisearch/yaup) crate, meant to solve my problem of yaup serializing `None`s as `null`. It also doesn't serialize empty `Vecs`, `&str`s, or `tuple`s. Currently the `tests::test_flattened_struct` and `tests::test_sequence_as_key` tests do not pass, and I have no plans to fix them, so the examples may or may not work.
 
 ---
 

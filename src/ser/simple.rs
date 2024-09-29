@@ -5,7 +5,8 @@ use std::io;
 use serde::ser::SerializeSeq;
 
 pub struct Serializer<'a, W> {
-    first_param: bool,
+    is_key: bool,
+    first_param: &'a mut bool,
     key: &'a str,
     writer: &'a mut W,
     sequence_allowed: bool,
@@ -15,8 +16,9 @@ impl<'a, W> Serializer<'a, W>
 where
     W: io::Write,
 {
-    pub fn new_from_toplevel(first_param: bool, key: &'a str, writer: &'a mut W) -> Self {
+    pub fn new_from_toplevel(is_key: bool, first_param: &'a mut bool, key: &'a str, writer: &'a mut W) -> Self {
         Serializer {
+            is_key,
             first_param,
             key,
             writer,
@@ -24,8 +26,9 @@ where
         }
     }
 
-    pub fn new_from_seq(first_param: bool, key: &'a str, writer: &'a mut W) -> Self {
+    pub fn new_from_seq(first_param: &'a mut bool, key: &'a str, writer: &'a mut W) -> Self {
         Serializer {
+            is_key: false,
             first_param,
             key,
             writer,
@@ -52,8 +55,10 @@ where
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -64,8 +69,10 @@ where
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -76,8 +83,10 @@ where
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -88,8 +97,10 @@ where
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -100,8 +111,10 @@ where
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -112,8 +125,10 @@ where
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -124,8 +139,10 @@ where
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -136,8 +153,10 @@ where
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -148,8 +167,10 @@ where
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -160,8 +181,10 @@ where
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -172,8 +195,10 @@ where
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -184,8 +209,10 @@ where
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}={v}", self.key)?;
         } else {
@@ -196,21 +223,27 @@ where
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
         let v = String::from_iter(form_urlencoded::byte_serialize(v.as_bytes()));
-        if self.sequence_allowed {
-            if !self.first_param {
-                write!(self.writer, "&")?;
+        if !v.is_empty() {
+            if self.sequence_allowed {
+                if !*self.first_param && self.is_key {
+                    write!(self.writer, "&")?;
+                } else {
+                    *self.first_param = false;
+                }
+                write!(self.writer, "{}={v}", self.key)?;
+            } else {
+                write!(self.writer, "{v}")?;
             }
-            write!(self.writer, "{}={v}", self.key)?;
-        } else {
-            write!(self.writer, "{v}")?;
         }
         Ok(())
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
         if !self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             return Err(Self::Error::UnsupportedNestedStruct("bytes"));
         }
@@ -276,10 +309,14 @@ where
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
-                write!(self.writer, "&")?;
+            if !_len.is_some_and(|len| len == 0) || _len.is_none() {
+                if !*self.first_param && self.is_key {
+                    write!(self.writer, "&")?;
+                } else {
+                    *self.first_param = false;
+                }
+                write!(self.writer, "{}=", self.key)?;
             }
-            write!(self.writer, "{}=", self.key)?;
             Ok(super::seq::Serializer::new(&self.key, self.writer))
         } else {
             Err(Self::Error::UnsupportedNestedStruct("sequence"))
@@ -288,8 +325,10 @@ where
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
         if self.sequence_allowed {
-            if !self.first_param {
+            if !*self.first_param && self.is_key {
                 write!(self.writer, "&")?;
+            } else {
+                *self.first_param = false;
             }
             write!(self.writer, "{}=", self.key)?;
             Ok(super::seq::Serializer::new(self.key, self.writer))
